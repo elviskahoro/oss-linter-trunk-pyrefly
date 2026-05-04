@@ -1,0 +1,25 @@
+version: 0.1
+
+tools:
+  definitions:
+    - name: pyrefly
+      runtime: python
+      package: pyrefly
+      shims: [pyrefly]
+      known_good_version: 0.60.0
+
+lint:
+  definitions:
+    - name: pyrefly
+      files: [python]
+      description: A fast Python type checker from Meta built in Rust
+      tools: [pyrefly]
+      suggest_if: files_present
+      known_good_version: 0.60.0
+      commands:
+        - name: lint
+          output: pass_fail
+          run: pyrefly check --summary=none ${target}
+          success_codes: [0, 1]
+          batch: true
+          cache_results: true

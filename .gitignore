@@ -1,0 +1,28 @@
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv
+venv/
+
+# Trunk
+.trunk/
+.trunk-cache/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Test artifacts
+test_reports/
+coverage/
