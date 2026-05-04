@@ -18,8 +18,10 @@ lint:
       known_good_version: 0.60.0
       commands:
         - name: lint
-          output: pass_fail
-          run: pyrefly check --summary=none ${target}
+          output: regex
+          run: pyrefly check --output-format=min-text --summary=none ${target}
           success_codes: [0, 1]
+          parse_regex: "(?P<severity>\\w+) (?P<path>[^:]+):(?P<line>\\d+):(?P<col>\\d+)(?:-\\d+)?: (?P<message>.*?) \\[(?P<code>[^\\]]+)\\]"
+          read_output_from: stdout
           batch: true
           cache_results: true
