@@ -16,10 +16,33 @@ lint:
       tools: [pyrefly]
       suggest_if: files_present
       known_good_version: 0.60.0
+      # Symlink the project's pyrefly.toml into Trunk's sandbox so pyrefly
+      # picks up project-includes / project-excludes etc.
+      direct_configs: [pyrefly.toml]
+      affects_cache:
+        - pyproject.toml
       commands:
         - name: lint
           output: regex
-          run: pyrefly check --output-format=min-text --summary=none ${target}
+          # Trunk runs each linter from a sandboxed tmp dir with `env -i` and only
+          # the configs listed in `direct_configs` symlinked in. That breaks two
+          # things pyrefly normally figures out from cwd:
+          #
+          #   1. Local imports — pyrefly falls back to file-walk heuristics that
+          #      don't know about the project root. We pass `--search-path
+          #      ${workspace}` (the repo root) to fix this for any layout.
+          #
+          #   2. Third-party imports — pyrefly queries `which python3`, which
+          #      under Trunk resolves to its tool venv (no project deps). We pass
+          #      `--python-interpreter-path ${workspace}/.venv/bin/python` so the
+          #      project's venv is queried for site-packages.
+          #
+          # The .venv path assumes uv / `python -m venv .venv` layout (the de
+          # facto convention). If pyrefly can't find that interpreter it logs a
+          # warning and falls back gracefully — projects with non-standard venvs
+          # can still set `python-interpreter-path` to an absolute path in their
+          # pyrefly.toml.
+          run: pyrefly check --python-interpreter-path ${workspace}/.venv/bin/python --search-path ${workspace} --output-format=min-text --summary=none ${target}
           success_codes: [0, 1]
           parse_regex: "(?P<severity>\\w+) (?P<path>[^:]+):(?P<line>\\d+):(?P<col>\\d+)(?:-\\d+)?: (?P<message>.*?) \\[(?P<code>[^\\]]+)\\]"
           read_output_from: stdout
